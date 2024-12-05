@@ -1,0 +1,16 @@
+{
+  "name": "friendzy",
+  "version": "1.0.0",
+  "description": "An app where we can connect with friends and create new connection",
+  "main": "index.js",
+  "scripts": {
+    "start" : "node src/app.js",
+    "dev" : "nodemon src/app.js"
+  },
+  "author": "Deepak",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1",
+    "nodemon": "^3.1.7"
+  }
+}
