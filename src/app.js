@@ -4,14 +4,11 @@
 
  const app = express();
 
- app.post("/signup",async(req,res)=>{
-   const user = new User ({
-    firstName : "Deepak",
-    lastName : "Behera",
-    emailId:"deepak123@gmail.com",
-    password:"Deepak@123"
+ //This middleware converting the JSON to JS object
+ app.use(express.json())
 
-   })
+ app.post("/signup",async(req,res)=>{
+   const user = new User (req.body)
 
    try{
     await user.save()
