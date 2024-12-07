@@ -1,7 +1,8 @@
 const express = require("express");
 const connectDB = require("./config/database");
 const User = require("./models/user");
-
+const { validateSignupData } = require("./utils/validations");
+const bcrypt = require("bcrypt");
 const app = express();
 
 //This middleware converting the JSON to JS object
@@ -9,9 +10,22 @@ app.use(express.json());
 
 //Sending data to db of new user
 app.post("/signup", async (req, res) => {
-  const user = new User(req.body);
-
   try {
+    //Validate signup data
+    validateSignupData(req);
+
+    const { firstName, lastName, emailId, password } = req.body;
+    //encrypt password
+    const passwordHash = await bcrypt.hash(password, 10);
+    console.log(passwordHash);
+
+    //creating new user instance
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
+    });
     await user.save();
     res.send("User Added Successfully ...");
   } catch (err) {
@@ -61,18 +75,26 @@ app.patch("/user/:userId", async (req, res) => {
 
   try {
     //Allowing updates for some fields
-    const ALLOWED_UPDATES =["firstName","lastName","photoUrl","gender","skills"]
-    const isUpdateAllowed = Object.keys(data).every((k) => 
+    const ALLOWED_UPDATES = [
+      "firstName",
+      "lastName",
+      "photoUrl",
+      "gender",
+      "skills",
+    ];
+    const isUpdateAllowed = Object.keys(data).every((k) =>
       ALLOWED_UPDATES.includes(k)
-    )
-    if(!isUpdateAllowed){
-      throw new Error("Update not allowed !")
+    );
+    if (!isUpdateAllowed) {
+      throw new Error("Update not allowed !");
     }
-    const user = await User.findByIdAndUpdate(userId, data,{runValidators:true});
-    
+    const user = await User.findByIdAndUpdate(userId, data, {
+      runValidators: true,
+    });
+
     res.send("User updated Successfully...");
   } catch (err) {
-    res.status(404).send("User not Updated"+err);
+    res.status(404).send("User not Updated" + err);
   }
 });
 

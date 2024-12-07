@@ -25,16 +25,11 @@ const userSchema = mongoose.Schema(
     password: {
       type: String,
       required: true,
-      validate: {
-        validator: function (password) {
-          const regex = /^[A-Z][A-Za-z0-9@#%*]+$/;
-          const hasSpecialChar = /[@#%*]/.test(password);
-          const hasNumber = /\d/.test(password);
-          return regex.test(password) && hasSpecialChar && hasNumber;
-        },
-        message:
-          "Password must start with a capital letter, include at least one special character (@, #, %, *), and contain at least one number.",
-      },
+      validate(value){
+        if(!validator.isStrongPassword(value)){
+            throw new Error("Password is not Strong"+ value) 
+        }
+      }
     },
     age: {
       type: Number,
