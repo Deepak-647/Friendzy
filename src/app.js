@@ -3,10 +3,18 @@ const connectDB = require("./config/database");
 const User = require("./models/user");
 const { validateSignupData } = require("./utils/validations");
 const bcrypt = require("bcrypt");
+var cookieParser = require("cookie-parser");
+var jwt = require("jsonwebtoken");
+const {userAuth} = require('./middlewares/authMiddleware')
+
+
+
+
 const app = express();
 
 //This middleware converting the JSON to JS object
 app.use(express.json());
+app.use(cookieParser());
 
 //Sending data to db of new user
 app.post("/signup", async (req, res) => {
@@ -41,17 +49,30 @@ app.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("Invalid credentials!");
     }
-    const isPasswordValid = await bcrypt.compare(password,user.password)
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if(isPasswordValid){
-      res.send("Login Successful !!!")
-    }else{
-      throw new Error("Invalid credentials")
+    if (isPasswordValid) {
+      //JWT token
+      const token = jwt.sign({ _id: user._id }, "Deepak@647");
+      res.cookie("token", token);
+      res.send("Login Successful !!!");
+    } else {
+      throw new Error("Invalid credentials");
     }
   } catch (err) {
     res.status(400).send("ERROR :" + err.message);
   }
 });
+
+app.get("/profile", userAuth,(req, res) => {
+  try {
+    const user = req.user;
+    res.send(user);
+  } catch (err) {
+    res.status(400).send("ERROR :" + err.message);
+  }
+});
+
 //Getting all users from db
 app.get("/users", async (req, res) => {
   try {
