@@ -3,7 +3,7 @@ const profileRouter = express.Router();
 const User = require("../models/user");
 const { userAuth } = require("../middlewares/authMiddleware");
 const { validateEditProfileData } = require("../utils/validations");
-const bcrypt =require('bcrypt');
+const bcrypt = require("bcrypt");
 
 profileRouter.get("/profile", userAuth, (req, res) => {
   try {
@@ -24,35 +24,37 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
 
     Object.keys(req.body).forEach((key) => (loggedInUser[key] = req.body[key]));
     loggedInUser.save();
-    res.json({message : `${loggedInUser.firstName} , your data updated successfully !!`,
-        data : loggedInUser}
-     );
+    res.json({
+      message: `${loggedInUser.firstName} , your data updated successfully !!`,
+      data: loggedInUser,
+    });
   } catch (err) {
     res.status(400).send("ERROR :" + err.message);
   }
 });
 
 //Updating the password
-profileRouter.patch("/profile/editpassword",userAuth,async(req,res)=>{
-    try{
-      const {oldPassword,newPassword} =req.body;
-      console.log(oldPassword)
-      const user= req.user
-      const savedPassword = user.password;
-        
-      const isPasswordValid = await bcrypt.compare(oldPassword,savedPassword)
-       if(!isPasswordValid){
-        throw new Error("Old password is not correct!!")
-       }
-       const passwordHash = await bcrypt.hash(newPassword, 10);
-       user.password=passwordHash;
-       
-       user.save()
-       res.send("Password updated Successfully..")
-    }catch(err){
-        res.status(400).send("ERROR :"+err.message)
+profileRouter.patch("/profile/editpassword", userAuth, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    const user = req.user;
+    const savedPassword = user.password;
+
+    const isPasswordValid = await bcrypt.compare(oldPassword, savedPassword);
+    if (!isPasswordValid) {
+      throw new Error("Old password is not correct!!");
     }
-})
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    user.password = passwordHash;
+
+    user.save();
+    res.send("Password updated Successfully..");
+  } catch (err) {
+    res.status(400).send("ERROR :" + err.message);
+  }
+});
+
 //Getting all users from db
 profileRouter.get("/users", async (req, res) => {
   try {
