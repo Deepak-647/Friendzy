@@ -2,7 +2,7 @@ const express = require("express");
 const { userAuth } = require("../middlewares/authMiddleware");
 const { ConnectionRequestModel } = require("../models/connectionRequests");
 const userRouter = express.Router();
-const USER_SAFE_DATA = ["firstName", "lastName", "photoUrl"]
+const USER_SAFE_DATA = ["firstName", "lastName", "photoUrl"];
 userRouter.get("/user/requests/received", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
@@ -25,14 +25,21 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
     const connectionRequest = await ConnectionRequestModel.find({
-        $or : [ 
-            {toUserId : loggedInUser._id , status : "accepted"},
-            {fromUserId : loggedInUser._id , status : "accepted"},
-        ]
-    }).populate("fromUserId",USER_SAFE_DATA)
+      $or: [
+        { toUserId: loggedInUser._id, status: "accepted" },
+        { fromUserId: loggedInUser._id, status: "accepted" },
+      ],
+    })
+      .populate("fromUserId", USER_SAFE_DATA)
+      .populate("toUserId", USER_SAFE_DATA);
 
-    const connections = connectionRequest.map(row => row.fromUserId)
-    res.send({connections})
+    const connections = connectionRequest.map((row) => {
+        if(row.fromUserId._id.toString() === loggedInUser._id.toString()){
+            return row.toUserId;
+        }
+        return row.fromUserId
+    });
+    res.send({ connections });
   } catch (err) {
     res.status(400).send("ERROR :" + err.message);
   }
