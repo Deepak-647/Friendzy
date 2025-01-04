@@ -5,6 +5,11 @@ var cookieParser = require("cookie-parser");
 
 const app = express();
 
+//handling cors error
+const cors = require("cors")
+app.use(cors())
+
+
 //This middleware converting the JSON to JS object
 app.use(express.json());
 app.use(cookieParser());
