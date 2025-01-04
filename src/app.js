@@ -7,7 +7,10 @@ const app = express();
 
 //handling cors error
 const cors = require("cors")
-app.use(cors())
+app.use(cors({
+  origin : "http://localhost:5173",
+  credentials : true
+}))
 
 
 //This middleware converting the JSON to JS object
