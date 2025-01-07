@@ -56,6 +56,11 @@ const userSchema = mongoose.Schema(
             }
           }
     },
+    about :{
+        type:String,
+        default : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvIDLyE2qiXbONA33TsxXBaa9vUEn3VxXw3A&s",
+        
+    },
     skills: {
       type: [String],
       validate: {
