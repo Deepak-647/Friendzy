@@ -26,11 +26,14 @@ const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 const http = require('http');
 const initializeSocket = require("./utils/socket");
+const chatRouter = require("./routes/chat");
 
 app.use("/",authRouter);
 app.use("/",profileRouter);
 app.use("/",requestRouter);
-app.use("/",userRouter)
+app.use("/",userRouter);
+app.use("/",chatRouter);
+
 
 const server = http.createServer(app);
 initializeSocket(server)
