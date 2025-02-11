@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
-const validator = require('validator');
-const jwt = require('jsonwebtoken');
-const bcrypt =require('bcrypt');
-
+const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 const userSchema = mongoose.Schema(
   {
@@ -20,20 +19,20 @@ const userSchema = mongoose.Schema(
       required: true,
       lowercase: true,
       unique: true,
-      validate(value){
-        if(!validator.isEmail(value)){
-            throw new Error("Invalid email address"+ value) 
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("Invalid email address" + value);
         }
-      }
+      },
     },
     password: {
       type: String,
       required: true,
-      validate(value){
-        if(!validator.isStrongPassword(value)){
-            throw new Error("Password is not Strong"+ value) 
+      validate(value) {
+        if (!validator.isStrongPassword(value)) {
+          throw new Error("Password is not Strong" + value);
         }
-      }
+      },
     },
     age: {
       type: Number,
@@ -47,20 +46,12 @@ const userSchema = mongoose.Schema(
         }
       },
     },
-    photo :{
-        type:String,
-    
-        // default : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvIDLyE2qiXbONA33TsxXBaa9vUEn3VxXw3A&s",
-        // validate(value){
-        //     if(!validator.isURL(value)){
-        //         throw new Error("Invalid photo URL"+ value) 
-        //     }
-        //   }
+    photo: {
+      type: String,
     },
-    about :{
-        type:String,
-        default : "",
-        
+    about: {
+      type: String,
+      default: "",
     },
     skills: {
       type: [String],
@@ -76,22 +67,24 @@ const userSchema = mongoose.Schema(
     timestamps: true,
   }
 );
-userSchema.methods.getJWT = async function(){
-  const user =this;
-  const token = await jwt.sign({_id : user._id},"Deepak@647",{
-    expiresIn : "7h"
-  }
-  )
- 
-  return token;
-}
+userSchema.methods.getJWT = async function () {
+  const user = this;
+  const token = await jwt.sign({ _id: user._id }, "Deepak@647", {
+    expiresIn: "7h",
+  });
 
-userSchema.methods.validatePassword = async function(passwordInputByUser){
-  const user =this;
+  return token;
+};
+
+userSchema.methods.validatePassword = async function (passwordInputByUser) {
+  const user = this;
   const passwordHash = user.password;
 
-  const isPasswordValid = await bcrypt.compare(passwordInputByUser,passwordHash)
- return isPasswordValid;
-}
+  const isPasswordValid = await bcrypt.compare(
+    passwordInputByUser,
+    passwordHash
+  );
+  return isPasswordValid;
+};
 
 module.exports = mongoose.model("User", userSchema);
