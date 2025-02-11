@@ -47,14 +47,15 @@ const userSchema = mongoose.Schema(
         }
       },
     },
-    photoUrl :{
+    photo :{
         type:String,
-        default : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvIDLyE2qiXbONA33TsxXBaa9vUEn3VxXw3A&s",
-        validate(value){
-            if(!validator.isURL(value)){
-                throw new Error("Invalid photo URL"+ value) 
-            }
-          }
+    
+        // default : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvIDLyE2qiXbONA33TsxXBaa9vUEn3VxXw3A&s",
+        // validate(value){
+        //     if(!validator.isURL(value)){
+        //         throw new Error("Invalid photo URL"+ value) 
+        //     }
+        //   }
     },
     about :{
         type:String,

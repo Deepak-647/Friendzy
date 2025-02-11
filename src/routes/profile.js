@@ -1,9 +1,20 @@
 const express = require("express");
+const multer = require("multer");
+const path = require("path");
 const profileRouter = express.Router();
 const User = require("../models/user");
 const { userAuth } = require("../middlewares/authMiddleware");
 const { validateEditProfileData } = require("../utils/validations");
 const bcrypt = require("bcrypt");
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage });
 
 profileRouter.get("/profile", userAuth, (req, res) => {
   try {
@@ -14,30 +25,43 @@ profileRouter.get("/profile", userAuth, (req, res) => {
   }
 });
 
-//Editing the user info
-profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
-  try {
-    if (!validateEditProfileData(req)) {
-      throw new Error("Invalid Edit request");
+// Editing the user info with image upload
+profileRouter.patch(
+  "/profile/edit",
+  userAuth,
+  upload.single("photo"),
+  async (req, res) => {
+    try {
+      if (!validateEditProfileData(req)) {
+        throw new Error("Invalid Edit request");
+      }
+      const loggedInUser = req.user;
+
+      Object.keys(req.body).forEach((key) => {
+        if (key !== "photo") {
+          loggedInUser[key] = req.body[key];
+        }
+      });
+
+      if (req.file) {
+        loggedInUser.photo = req.file.filename;
+      }
+
+      await loggedInUser.save();
+      res.json({
+        message: `${loggedInUser.firstName}, your data updated successfully !!`,
+        data: loggedInUser,
+      });
+    } catch (err) {
+      res.status(400).send("ERROR :" + err.message);
     }
-    const loggedInUser = req.user;
-
-    Object.keys(req.body).forEach((key) => (loggedInUser[key] = req.body[key]));
-    loggedInUser.save();
-    res.json({
-      message: `${loggedInUser.firstName} , your data updated successfully !!`,
-      data: loggedInUser,
-    });
-  } catch (err) {
-    res.status(400).send("ERROR :" + err.message);
   }
-});
+);
 
-//Updating the password
+// Updating the password
 profileRouter.patch("/profile/editpassword", userAuth, async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
-
     const user = req.user;
     const savedPassword = user.password;
 
@@ -48,14 +72,14 @@ profileRouter.patch("/profile/editpassword", userAuth, async (req, res) => {
     const passwordHash = await bcrypt.hash(newPassword, 10);
     user.password = passwordHash;
 
-    user.save();
+    await user.save();
     res.send("Password updated Successfully..");
   } catch (err) {
     res.status(400).send("ERROR :" + err.message);
   }
 });
 
-//Getting all users from db
+// Getting all users from db
 profileRouter.get("/users", async (req, res) => {
   try {
     const users = await User.find({});
@@ -65,7 +89,7 @@ profileRouter.get("/users", async (req, res) => {
   }
 });
 
-//Getting a single user using email
+// Getting a single user using email
 profileRouter.get("/user", async (req, res) => {
   try {
     const userEmail = req.body.emailId;
@@ -79,45 +103,15 @@ profileRouter.get("/user", async (req, res) => {
   }
 });
 
-//Deleting an user from database
+// Deleting a user from database
 profileRouter.delete("/user", async (req, res) => {
   const userId = req.body.userId;
   try {
-    const user = await User.findByIdAndDelete(userId);
+    await User.findByIdAndDelete(userId);
     res.send("User deleted successfully ..");
   } catch (err) {
     res.status(404).send("User cannot be deleted");
   }
 });
-
-//Updating user in db
-//   profileRouter.patch("/user/:userId", async (req, res) => {
-//     const userId = req.params?.userId;
-//     const data = req.body;
-
-//     try {
-//       //Allowing updates for some fields
-//       const ALLOWED_UPDATES = [
-//         "firstName",
-//         "lastName",
-//         "photoUrl",
-//         "gender",
-//         "skills",
-//       ];
-//       const isUpdateAllowed = Object.keys(data).every((k) =>
-//         ALLOWED_UPDATES.includes(k)
-//       );
-//       if (!isUpdateAllowed) {
-//         throw new Error("Update not allowed !");
-//       }
-//       const user = await User.findByIdAndUpdate(userId, data, {
-//         runValidators: true,
-//       });
-
-//       res.send("User updated Successfully...");
-//     } catch (err) {
-//       res.status(404).send("User not Updated" + err);
-//     }
-//   });
 
 module.exports = profileRouter;

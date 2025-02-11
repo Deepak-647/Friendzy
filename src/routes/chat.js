@@ -16,7 +16,7 @@ chatRouter.get("/chat/:toTargetId", userAuth, async (req, res) => {
       select: "firstName lastName",
     });
     if (!chat) {
-      chat = new chat({
+      chat = new Chat({
         participants: [userId, toTargetId],
         messages: [],
       });
